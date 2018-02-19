@@ -31,6 +31,9 @@ values."
    ;; List of configuration layers to load.
    dotspacemacs-configuration-layers
    '(
+     javascript
+     clojure
+     markdown
      python
      html
      ruby
@@ -57,7 +60,7 @@ values."
    ;; wrapped in a layer. If you need some configuration for these
    ;; packages, then consider creating a layer. You can also put the
    ;; configuration in `dotspacemacs/user-config'.
-   dotspacemacs-additional-packages '(ac-etags auto-complete swap-buffers tabbar highlight2clipboard magit judge-indent multiple-cursors plantuml-mode flycheck-plantuml etags-table column-enforce-mode vlf gnuplot)
+   dotspacemacs-additional-packages '(ac-etags auto-complete swap-buffers tabbar highlight2clipboard magit judge-indent multiple-cursors plantuml-mode flycheck-plantuml etags-table column-enforce-mode vlf gnuplot tldr irony company-irony company-irony-c-headers)
    ;; A list of packages that cannot be updated.
    dotspacemacs-frozen-packages '()
    ;; A list of packages that will not be installed and loaded.
@@ -252,7 +255,7 @@ values."
    ;; If non nil line numbers are turned on in all `prog-mode' and `text-mode'
    ;; derivatives. If set to `relative', also turns on relative line numbers.
    ;; (default nil)
-   dotspacemacs-line-numbers nil
+   dotspacemacs-line-numbers t
    ;; Code folding method. Possible values are `evil' and `origami'.
    ;; (default 'evil)
    dotspacemacs-folding-method 'evil
@@ -308,10 +311,8 @@ you should place your code here."
   (setq scroll-conservatively 50)
   (setq scroll-margin 2)
   (setq scroll-step 1)
-  (global-set-key [M-down] (lambda () (interactive) (scroll-up 2)))
-  (global-set-key [M-up] (lambda () (interactive) (scroll-down 2)))
-
-  (global-linum-mode 1)
+  (global-set-key [M-down] (lambda () (interactive) (scroll-up 5)))
+  (global-set-key [M-up] (lambda () (interactive) (scroll-down 5)))
 
   (global-set-key (kbd "C-i") 'iedit-mode)
 
@@ -345,9 +346,12 @@ you should place your code here."
   (with-eval-after-load 'org
     (org-babel-do-load-languages
      'org-babel-load-languages
-     '((plantuml . t)
+     '(
+       (plantuml . t)
        (latex . t)
-       (gnuplot . t)))
+       (gnuplot . t)
+       )
+     )
     )
 
   (setq org-plantuml-jar-path
@@ -364,19 +368,23 @@ you should place your code here."
 
   (cua-selection-mode 1)
 
-  (setq user-mail-address "och95@yandex.ru"
-        user-full-name "Vladislav Khmelevskiy")
-  (setq smtpmail-smtp-server "smtp.yandex.ru")
-  (message-send-mail-function 'message-smtpmail-send-it)
-  (setq smtpmail-debug-info t)
-  (setq message-default-mail-headers "Cc: \nBcc: \n")
-  (setq message-auto-save-directory "~/Mail/drafts")
-
   (require 'cl)
   (setenv "PATH" (concat "/Library/TeX/texbin" (getenv "PATH")))
   (setq exec-path (append '("/Library/TeX/texbin") exec-path))
 
   (add-hook 'after-init-hook 'global-company-mode)
+
+  (add-hook 'c++-mode-hook 'irony-mode)
+  (add-hook 'c-mode-hook 'irony-mode)
+  (add-hook 'objc-mode-hook 'irony-mode)
+
+  (eval-after-load 'company
+    '(add-to-list 'company-backends 'company-irony))
+
+  (require 'company-irony-c-headers)
+  (eval-after-load 'company
+    '(add-to-list
+      'company-backends '(company-irony-c-headers company-irony)))
 
   )
 
@@ -389,7 +397,8 @@ you should place your code here."
  ;; If there is more than one, they won't work right.
  '(package-selected-packages
    (quote
-    (gnuplot company-math ac-math latex-preview-pane auctex px cdlatex latex-math-preview yapfify pyvenv pytest pyenv-mode py-isort pip-requirements live-py-mode hy-mode helm-pydoc cython-mode anaconda-mode pythonic csharp-mode web-mode tagedit slim-mode scss-mode sass-mode pug-mode less-css-mode helm-css-scss haml-mode emmet-mode vlf rainbow-mode cl-lib pdf-tools zlc org-pdfview nhexl-mode tabbar-ruler rvm ruby-tools ruby-test-mode rubocop rspec-mode robe rbenv rake minitest chruby bundler inf-ruby project-explorer dirtree smart-compile etags-table etags-select flycheck-plantuml gulp-task-runner plantuml-mode flycheck smeargle orgit org magit-gitflow helm-gitignore gitignore-mode gitconfig-mode gitattributes-mode git-timemachine git-messenger git-link evil-magit multiple-cursors judge-indent highlight2clipboard swap-buffers ac-etags company auto-complete buffer-move tabbar sr-speedbar magit git ws-butler window-numbering which-key volatile-highlights vi-tilde-fringe uuidgen use-package toc-org spaceline powerline restart-emacs request rainbow-delimiters popwin persp-mode pcre2el paradox spinner org-plus-contrib org-bullets open-junk-file neotree move-text macrostep lorem-ipsum linum-relative link-hint info+ indent-guide ido-vertical-mode hydra hungry-delete hl-todo highlight-parentheses highlight-numbers parent-mode highlight-indentation hide-comnt help-fns+ helm-themes helm-swoop helm-projectile helm-mode-manager helm-make projectile pkg-info epl helm-flx helm-descbinds helm-ag google-translate golden-ratio flx-ido flx fill-column-indicator fancy-battery eyebrowse expand-region exec-path-from-shell evil-visualstar evil-visual-mark-mode evil-unimpaired evil-tutor evil-surround evil-search-highlight-persist evil-numbers evil-nerd-commenter evil-mc evil-matchit evil-lisp-state smartparens evil-indent-plus evil-iedit-state iedit evil-exchange evil-escape evil-ediff evil-args evil-anzu anzu evil goto-chg undo-tree eval-sexp-fu highlight elisp-slime-nav dumb-jump f s diminish define-word column-enforce-mode clean-aindent-mode bind-map bind-key auto-highlight-symbol auto-compile packed dash aggressive-indent adaptive-wrap ace-window ace-link ace-jump-helm-line helm avy helm-core popup async quelpa package-build spacemacs-theme)))
+    (web-beautify livid-mode skewer-mode simple-httpd json-mode json-snatcher json-reformat js2-refactor js2-mode js-doc coffee-mode company-irony-c-headers company-irony irony tldr ob-prolog clj-refactor inflections edn paredit yasnippet peg cider-eval-sexp-fu cider seq queue clojure-mode mmm-mode markdown-mode gh-md multi-project htmlize magit-popup git-commit with-editor gnuplot company-math ac-math latex-preview-pane auctex px cdlatex latex-math-preview yapfify pyvenv pytest pyenv-mode py-isort pip-requirements live-py-mode hy-mode helm-pydoc cython-mode anaconda-mode pythonic csharp-mode web-mode tagedit slim-mode scss-mode sass-mode pug-mode less-css-mode helm-css-scss haml-mode emmet-mode vlf rainbow-mode cl-lib pdf-tools zlc org-pdfview nhexl-mode tabbar-ruler rvm ruby-tools ruby-test-mode rubocop rspec-mode robe rbenv rake minitest chruby bundler inf-ruby project-explorer dirtree smart-compile etags-table etags-select flycheck-plantuml gulp-task-runner plantuml-mode flycheck smeargle orgit org magit-gitflow helm-gitignore gitignore-mode gitconfig-mode gitattributes-mode git-timemachine git-messenger git-link evil-magit multiple-cursors judge-indent highlight2clipboard swap-buffers ac-etags company auto-complete buffer-move tabbar sr-speedbar magit git ws-butler window-numbering which-key volatile-highlights vi-tilde-fringe uuidgen use-package toc-org spaceline powerline restart-emacs request rainbow-delimiters popwin persp-mode pcre2el paradox spinner org-plus-contrib org-bullets open-junk-file neotree move-text macrostep lorem-ipsum linum-relative link-hint info+ indent-guide ido-vertical-mode hydra hungry-delete hl-todo highlight-parentheses highlight-numbers parent-mode highlight-indentation hide-comnt help-fns+ helm-themes helm-swoop helm-projectile helm-mode-manager helm-make projectile pkg-info epl helm-flx helm-descbinds helm-ag google-translate golden-ratio flx-ido flx fill-column-indicator fancy-battery eyebrowse expand-region exec-path-from-shell evil-visualstar evil-visual-mark-mode evil-unimpaired evil-tutor evil-surround evil-search-highlight-persist evil-numbers evil-nerd-commenter evil-mc evil-matchit evil-lisp-state smartparens evil-indent-plus evil-iedit-state iedit evil-exchange evil-escape evil-ediff evil-args evil-anzu anzu evil goto-chg undo-tree eval-sexp-fu highlight elisp-slime-nav dumb-jump f s diminish define-word column-enforce-mode clean-aindent-mode bind-map bind-key auto-highlight-symbol auto-compile packed dash aggressive-indent adaptive-wrap ace-window ace-link ace-jump-helm-line helm avy helm-core popup async quelpa package-build spacemacs-theme)))
+ '(paradox-github-token t)
  '(safe-local-variable-values
    (quote
     ((eval add-hook
