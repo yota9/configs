@@ -1,0 +1,29 @@
+[global_config]
+[keybindings]
+  close_term = <Primary>0
+  go_next = <Primary>Page_Down
+  go_prev = <Primary>Page_Up
+  new_window = <Primary><Shift>n
+  next_tab = None
+  page_down = Page_Down
+  page_up = Page_Up
+  prev_tab = None
+  split_horiz = <Primary>2
+  split_vert = <Primary>3
+  toggle_zoom = <Primary>1
+  zoom_normal = <Primary>equal
+[layouts]
+  [[default]]
+    [[[child1]]]
+      parent = window0
+      type = Terminal
+    [[[window0]]]
+      parent = ""
+      type = Window
+[plugins]
+[profiles]
+  [[default]]
+    background_image = None
+    scroll_on_output = False
+    scrollback_infinite = True
+    scrollback_lines = 90000
