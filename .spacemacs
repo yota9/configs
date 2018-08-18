@@ -21,7 +21,7 @@ values."
    ;; variable `dotspacemacs-configuration-layers' to install it.
    ;; (default 'unused)
    dotspacemacs-enable-lazy-installation 'unused
-   ;; If non-nil then Spacemacs will ask for confir'ac-etagsmation before installing
+   ;; If non-nil then Spacemacs will ask for confirmation before installing
    ;; a layer lazily. (default t)
    dotspacemacs-ask-for-lazy-installation t
    ;; If non-nil layers with lazy install support are lazy installed.
@@ -31,11 +31,9 @@ values."
    ;; List of configuration layers to load.
    dotspacemacs-configuration-layers
    '(
-     javascript
-     clojure
      markdown
-     python
-     html
+     php
+     javascript
      ruby
      ;; ----------------------------------------------------------------
      ;; Example of useful layers you may want to use right away.
@@ -60,7 +58,7 @@ values."
    ;; wrapped in a layer. If you need some configuration for these
    ;; packages, then consider creating a layer. You can also put the
    ;; configuration in `dotspacemacs/user-config'.
-   dotspacemacs-additional-packages '(ac-etags auto-complete swap-buffers tabbar highlight2clipboard magit judge-indent multiple-cursors plantuml-mode flycheck-plantuml etags-table column-enforce-mode vlf gnuplot tldr irony company-irony company-irony-c-headers)
+   dotspacemacs-additional-packages '(ac-etags auto-complete swap-buffers tabbar magit judge-indent multiple-cursors magit-gerrit vlf plantuml-mode flycheck-plantuml etags-table column-enforce-mode gnuplot tldr)
    ;; A list of packages that cannot be updated.
    dotspacemacs-frozen-packages '()
    ;; A list of packages that will not be installed and loaded.
@@ -138,8 +136,8 @@ values."
    dotspacemacs-colorize-cursor-according-to-state t
    ;; Default font, or prioritized list of fonts. `powerline-scale' allows to
    ;; quickly tweak the mode-line size to make separators look not too crappy.
-   dotspacemacs-default-font '("Source Code Pro"
-                               :size 13
+   dotspacemacs-default-font '("DejaVuSansMono"
+                               :size 15
                                :weight normal
                                :width normal
                                :powerline-scale 1.1)
@@ -154,7 +152,7 @@ values."
    ;; (default "M-m")
    dotspacemacs-emacs-leader-key "M-m"
    ;; Major mode leader key is a shortcut key which is the equivalent of
-   ;; pressing `<leader> m`. Set it to `nil` to disable it. (default ",")
+   ;; pressing `<leader> magit`. Set it to `nil` to disable it. (default ",")
    dotspacemacs-major-mode-leader-key ","
    ;; Major mode leader key accessible in `emacs state' and `insert state'.
    ;; (default "C-M-m")
@@ -208,7 +206,7 @@ values."
    ;; in all non-asynchronous sources. If set to `source', preserve individual
    ;; source settings. Else, disable fuzzy matching in all sources.
    ;; (default 'always)
-   dotspacemacs-helm-use-fuzzy 'always
+   dotspacemacs-helm-use-fuzzy 'source
    ;; If non nil the paste micro-state is enabled. When enabled pressing `p`
    ;; several times cycle between the kill ring content. (default nil)
    dotspacemacs-enable-paste-transient-state nil
@@ -255,7 +253,7 @@ values."
    ;; If non nil line numbers are turned on in all `prog-mode' and `text-mode'
    ;; derivatives. If set to `relative', also turns on relative line numbers.
    ;; (default nil)
-   dotspacemacs-line-numbers t
+   dotspacemacs-line-numbers nil
    ;; Code folding method. Possible values are `evil' and `origami'.
    ;; (default 'evil)
    dotspacemacs-folding-method 'evil
@@ -287,7 +285,6 @@ values."
    ;; delete only whitespace for changed lines or `nil' to disable cleanup.
    ;; (default nil)
    dotspacemacs-whitespace-cleanup nil
-   ;; don't delete packeges on startup
    ))
 
 (defun dotspacemacs/user-init ()
@@ -307,12 +304,29 @@ This is the place where most of your configurations should be done. Unless it is
 explicitly specified that a variable should be set before a package is loaded,
 you should place your code here."
 
-  ;;scroll
+  ;; FOR SCROLL
   (setq scroll-conservatively 50)
   (setq scroll-margin 2)
   (setq scroll-step 1)
-  (global-set-key [M-down] (lambda () (interactive) (scroll-up 5)))
-  (global-set-key [M-up] (lambda () (interactive) (scroll-down 5)))
+  (global-set-key [M-down] (lambda () (interactive) (scroll-up 2)))
+  (global-set-key [M-up] (lambda () (interactive) (scroll-down 2)))
+
+  ;;linum
+  (global-linum-mode 1)
+
+  ;;tabbar
+  (tabbar-mode 1)
+
+  (setq org-plantuml-jar-path
+        (expand-file-name "~/plantuml.jar"))
+  (with-eval-after-load 'org
+    (org-babel-do-load-languages
+     'org-babel-load-languages
+     '((plantuml . t)
+       (latex . t)
+       (gnuplot . t)))
+    )
+  (setq org-confirm-babel-evaluate nil)
 
   (global-set-key (kbd "C-i") 'iedit-mode)
 
@@ -321,10 +335,6 @@ you should place your code here."
 
   (require 'tabbar)
   (tabbar-mode t)
-
-  (require 'highlight2clipboard)
-  (highlight2clipboard-mode t)
-  (setq x-select-enable-clipboard t)
 
   (defun copy-line (arg)
     "Copy lines (as many as prefix argument) in the kill ring"
@@ -336,27 +346,19 @@ you should place your code here."
 
   (require 'judge-indent)
   (global-judge-indent-mode 1)
-  (setq judge-indent-major-modes '(c-mode ruby-mode sh-mode))
+  (setq judge-indent-major-modes '(c-mode ruby-mode sh-mode makefile-mode))
 
   (with-eval-after-load 'org (setq org-startup-indented t))
+
+  (setq compilation-skip-threshold 2)
 
   (add-to-list 'auto-mode-alist '("\\.pu\\'" . org-mode))
   (add-hook 'org-babel-after-execute-hook 'org-redisplay-inline-images)
 
-  (with-eval-after-load 'org
-    (org-babel-do-load-languages
-     'org-babel-load-languages
-     '(
-       (plantuml . t)
-       (latex . t)
-       (gnuplot . t)
-       )
-     )
-    )
+  (require 'magit-gerrit)
+  (setq-default magit-gerrit-ssh-creds "och95@yandex.ru")
 
-  (setq org-plantuml-jar-path
-        (expand-file-name "~/plantuml.jar"))
-  (setq org-confirm-babel-evaluate nil)
+  (cua-selection-mode 1)
 
   (require 'etags-table)
   (setq etags-table-search-up-depth 2)
@@ -364,27 +366,21 @@ you should place your code here."
   (require 'column-enforce-mode)
   (add-hook 'prog-mode-hook 'column-enforce-mode)
 
-  (setq split-height-threshold nil)
+  (setq user-mail-address "och95@yandex.ru"
+        user-full-name "Vladislav Khmelevskiy")
+  (setq smtpmail-smtp-server "smtp.yandex.ru")
+  (message-send-mail-function 'message-smtpmail-send-it)
+  (setq smtpmail-debug-info t)
+  (setq message-default-mail-headers "Cc: \nBcc: \n")
+  (setq message-auto-save-directory "~/Mail/drafts")
 
-  (cua-selection-mode 1)
 
-  (require 'cl)
-  (setenv "PATH" (concat "/Library/TeX/texbin" (getenv "PATH")))
-  (setq exec-path (append '("/Library/TeX/texbin") exec-path))
+  (require 'org-babel)
+  (require 'org-babel-init)
+  (require 'org-babel-gnuplot)
 
-  (add-hook 'after-init-hook 'global-company-mode)
 
-  (add-hook 'c++-mode-hook 'irony-mode)
-  (add-hook 'c-mode-hook 'irony-mode)
-  (add-hook 'objc-mode-hook 'irony-mode)
 
-  (eval-after-load 'company
-    '(add-to-list 'company-backends 'company-irony))
-
-  (require 'company-irony-c-headers)
-  (eval-after-load 'company
-    '(add-to-list
-      'company-backends '(company-irony-c-headers company-irony)))
 
   )
 
@@ -395,45 +391,26 @@ you should place your code here."
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
+ '(custom-safe-themes
+   (quote
+    ("3c83b3676d796422704082049fc38b6966bcad960f896669dfc21a7a37a748fa" default)))
+ '(dired-recursive-deletes (quote always))
+ '(evil-want-Y-yank-to-eol nil)
+ '(google-translate-default-source-language "en" t)
+ '(google-translate-default-target-language "ru" t)
+ '(magit-log-arguments (quote ("--graph" "--decorate" "-n256")))
+ '(org-latex-compiler "xelatex")
  '(package-selected-packages
    (quote
-    (web-beautify livid-mode skewer-mode simple-httpd json-mode json-snatcher json-reformat js2-refactor js2-mode js-doc coffee-mode company-irony-c-headers company-irony irony tldr ob-prolog clj-refactor inflections edn paredit yasnippet peg cider-eval-sexp-fu cider seq queue clojure-mode mmm-mode markdown-mode gh-md multi-project htmlize magit-popup git-commit with-editor gnuplot company-math ac-math latex-preview-pane auctex px cdlatex latex-math-preview yapfify pyvenv pytest pyenv-mode py-isort pip-requirements live-py-mode hy-mode helm-pydoc cython-mode anaconda-mode pythonic csharp-mode web-mode tagedit slim-mode scss-mode sass-mode pug-mode less-css-mode helm-css-scss haml-mode emmet-mode vlf rainbow-mode cl-lib pdf-tools zlc org-pdfview nhexl-mode tabbar-ruler rvm ruby-tools ruby-test-mode rubocop rspec-mode robe rbenv rake minitest chruby bundler inf-ruby project-explorer dirtree smart-compile etags-table etags-select flycheck-plantuml gulp-task-runner plantuml-mode flycheck smeargle orgit org magit-gitflow helm-gitignore gitignore-mode gitconfig-mode gitattributes-mode git-timemachine git-messenger git-link evil-magit multiple-cursors judge-indent highlight2clipboard swap-buffers ac-etags company auto-complete buffer-move tabbar sr-speedbar magit git ws-butler window-numbering which-key volatile-highlights vi-tilde-fringe uuidgen use-package toc-org spaceline powerline restart-emacs request rainbow-delimiters popwin persp-mode pcre2el paradox spinner org-plus-contrib org-bullets open-junk-file neotree move-text macrostep lorem-ipsum linum-relative link-hint info+ indent-guide ido-vertical-mode hydra hungry-delete hl-todo highlight-parentheses highlight-numbers parent-mode highlight-indentation hide-comnt help-fns+ helm-themes helm-swoop helm-projectile helm-mode-manager helm-make projectile pkg-info epl helm-flx helm-descbinds helm-ag google-translate golden-ratio flx-ido flx fill-column-indicator fancy-battery eyebrowse expand-region exec-path-from-shell evil-visualstar evil-visual-mark-mode evil-unimpaired evil-tutor evil-surround evil-search-highlight-persist evil-numbers evil-nerd-commenter evil-mc evil-matchit evil-lisp-state smartparens evil-indent-plus evil-iedit-state iedit evil-exchange evil-escape evil-ediff evil-args evil-anzu anzu evil goto-chg undo-tree eval-sexp-fu highlight elisp-slime-nav dumb-jump f s diminish define-word column-enforce-mode clean-aindent-mode bind-map bind-key auto-highlight-symbol auto-compile packed dash aggressive-indent adaptive-wrap ace-window ace-link ace-jump-helm-line helm avy helm-core popup async quelpa package-build spacemacs-theme)))
- '(paradox-github-token t)
- '(safe-local-variable-values
-   (quote
-    ((eval add-hook
-           (quote prog-mode-hook)
-           (lambda nil
-             (whitespace-mode 1))
-           (not :APPEND)
-           :BUFFER-LOCAL)
-     (eval let*
-           ((x
-             (dir-locals-find-file default-directory))
-            (this-directory
-             (if
-                 (listp x)
-                 (car x)
-               (file-name-directory x))))
-           (unless
-               (featurep
-                (quote swift-project-settings))
-             (add-to-list
-              (quote load-path)
-              (concat this-directory "utils")
-              :append)
-             (let
-                 ((swift-project-directory this-directory))
-               (require
-                (quote swift-project-settings))))
-           (set
-            (make-local-variable
-             (quote swift-project-directory))
-            this-directory)))))
- '(send-mail-function (quote mailclient-send-it)))
+    (tldr winum parent-mode pkg-info epl flx ghub anzu goto-chg popup powerline spinner hydra projectile diminish bind-key packed avy highlight iedit smartparens bind-map evil f undo-tree helm helm-core magit-popup git-commit with-editor async dash s mmm-mode markdown-toc markdown-mode gh-md sort-words pandoc ctags-update gnuplot flycheck-plantuml plantuml-mode flycheck etags-table vlf php-extras phpunit phpcbf php-auto-yasnippets drupal-mode php-mode web-beautify livid-mode skewer-mode simple-httpd json-mode json-snatcher json-reformat js2-refactor js2-mode js-doc coffee-mode etags-select ssh circe magit-gerrit helm-company helm-c-yasnippet company-statistics company auto-yasnippet yasnippet ac-ispell smeargle orgit org magit-gitflow helm-gitignore gitignore-mode gitconfig-mode gitattributes-mode git-timemachine git-messenger git-link evil-magit magit-p4 magit-filenotify multiple-cursors judge-indent niceify-info swap-buffers highlight2clipboard htmlize ac-etags powerline-evil smart-mode-line highlight-blocks rvm ruby-tools ruby-test-mode rubocop rspec-mode robe rbenv rake minitest chruby bundler inf-ruby spaceline multi-project tabbar buffer-move projector project-explorer auto-complete magit ws-butler window-numbering which-key volatile-highlights vi-tilde-fringe uuidgen use-package toc-org spacemacs-theme restart-emacs request rainbow-delimiters quelpa popwin persp-mode pcre2el paradox org-plus-contrib org-bullets open-junk-file neotree move-text macrostep lorem-ipsum linum-relative link-hint info+ indent-guide ido-vertical-mode hungry-delete hl-todo highlight-parentheses highlight-numbers highlight-indentation hide-comnt help-fns+ helm-themes helm-swoop helm-projectile helm-mode-manager helm-make helm-flx helm-descbinds helm-ag google-translate golden-ratio flx-ido fill-column-indicator fancy-battery eyebrowse expand-region exec-path-from-shell evil-visualstar evil-visual-mark-mode evil-unimpaired evil-tutor evil-surround evil-search-highlight-persist evil-numbers evil-nerd-commenter evil-mc evil-matchit evil-lisp-state evil-indent-plus evil-iedit-state evil-exchange evil-escape evil-ediff evil-args evil-anzu eval-sexp-fu elisp-slime-nav dumb-jump define-word column-enforce-mode clean-aindent-mode auto-highlight-symbol auto-compile aggressive-indent adaptive-wrap ace-window ace-link ace-jump-helm-line)))
+ '(standard-indent 4)
+ '(tab-stop-list nil)
+ '(tab-width 4))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  )
+
+

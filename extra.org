@@ -1,0 +1,5 @@
+* Apple mouse: Interpret middle click as left button:
+** xinput list --long, find mouse and find "Button labels", 2nd will be middle
+** xinput list, find id of mouse
+** xinput  get-button-map <id> - default function mappings 1..7
+** xinmput set-button-map <id> 1 1 3 4 5 6 7 - remap middle button to left action
