@@ -1,0 +1,5 @@
+synclient TapButton1=0 #Disable left tapping
+synclient TapButton2=0 #Disable right tapping
+sudo apt install xserver-xorg-input-libinput
+sudo apt remove xserver-xorg-input-synaptics-hwe-16.04
+reboot
