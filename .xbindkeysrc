@@ -40,7 +40,7 @@
 
 #Right click = touchdad + ctrl
 "xte 'usleep 100000' 'mouseclick 3'"
-   control + b:1 + Release
+   Control + b:1 | release
 
 #
 # End of xbindkeys configuration
