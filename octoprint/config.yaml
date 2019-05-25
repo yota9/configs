@@ -1,0 +1,83 @@
+accessControl:
+  salt: 8YyMxRClgWkmNMgyBXcb88EdbTxF0t5d
+api:
+  key: 24B5B08C714040C5A4C9C01DF83D6E34
+events:
+  enabled: true
+  subscriptions:
+  - event: PrintStarted
+    command: cd ~/mjpg-streamer/mjpg-streamer-experimental && ./mjpg_streamer -i "./input_uvc.so" -o "./output_http.so"
+    type: system
+  - event: PrintStarted
+    command: python ~/Documents/OctoPiLCD/OctoPiLCD.py
+    type: system
+  - event: PrintFailed
+    command:
+    - G28
+    type: gcode
+  - event: PrintCancelled
+    command:
+    - G28
+    type: gcode
+  - event: PrintPaused
+    command:
+    - G28
+    type: gcode
+  - event: PrintDone
+    command: killall mjpg_streamer
+    type: system
+  - event: Disconnected
+    command: killall mjpg_streamer
+    type: system
+plugins:
+  announcements:
+    _config_version: 1
+    channels:
+      _blog:
+        read_until: 1555088400
+      _important:
+        read_until: 1521111600
+      _octopi:
+        read_until: 1549966200
+      _plugins:
+        read_until: 1557619200
+      _releases:
+        read_until: 1557824400
+  discovery:
+    upnpUuid: 169053dd-2a16-4290-ab8e-c5f48ff51e4a
+  softwareupdate:
+    _config_version: 6
+printerProfiles:
+  default: _default
+serial:
+  baudrate: 0
+  port: AUTO
+server:
+  commands:
+    serverRestartCommand: sudo service octoprint restart
+    systemRestartCommand: sudo shutdown -r now
+    systemShutdownCommand: sudo shutdown -h now
+  firstRun: false
+  onlineCheck:
+    enabled: true
+  pluginBlacklist:
+    enabled: true
+  secretKey: ONBLZkWrgS4XYOFFi37WS5m8iBQFZQ7n
+  seenWizards:
+    corewizard: 3
+    cura: null
+slicing:
+  defaultProfiles:
+    cura: cura
+temperature:
+  profiles:
+  - bed: 100
+    extruder: 210
+    name: ABS
+  - bed: 65
+    extruder: 185
+    name: PLA
+webcam:
+  ffmpeg: /usr/bin/avconv
+  snapshot: http://127.0.0.1:8080/?action=snapshot
+  stream: http://192.168.1.46:8080/?action=stream
