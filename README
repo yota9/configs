@@ -1,0 +1,2 @@
+Bluetooth touchpad instructions (Logitech T651):
+  If touchpad don't reconnect to PC use bluetoothctl: trust <dev> command 
